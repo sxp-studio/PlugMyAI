@@ -30,18 +30,18 @@ daemon-only:
 dev: build
 	./$(BIN_DIR)/$(BINARY_NAME) --no-tray
 
-# Cross-compilation targets
+# Cross-compilation targets (CGO_ENABLED=0 → headless, no systray)
 build-darwin-arm64:
-	cd $(DAEMON_DIR) && GOOS=darwin GOARCH=arm64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-darwin-arm64 ./cmd/plug-my-ai
+	cd $(DAEMON_DIR) && CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-darwin-arm64 ./cmd/plug-my-ai
 
 build-darwin-amd64:
-	cd $(DAEMON_DIR) && GOOS=darwin GOARCH=amd64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-darwin-amd64 ./cmd/plug-my-ai
+	cd $(DAEMON_DIR) && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-darwin-amd64 ./cmd/plug-my-ai
 
 build-linux-amd64:
-	cd $(DAEMON_DIR) && GOOS=linux GOARCH=amd64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-linux-amd64 ./cmd/plug-my-ai
+	cd $(DAEMON_DIR) && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-linux-amd64 ./cmd/plug-my-ai
 
 build-linux-arm64:
-	cd $(DAEMON_DIR) && GOOS=linux GOARCH=arm64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-linux-arm64 ./cmd/plug-my-ai
+	cd $(DAEMON_DIR) && CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o ../$(BIN_DIR)/$(BINARY_NAME)-linux-arm64 ./cmd/plug-my-ai
 
 build-all: dashboard build-darwin-arm64 build-darwin-amd64 build-linux-amd64 build-linux-arm64
 
