@@ -4,6 +4,7 @@
   import Apps from './pages/Apps.svelte';
   import History from './pages/History.svelte';
   import Approve from './pages/Approve.svelte';
+  import Settings from './pages/Settings.svelte';
   import Onboarding from './pages/Onboarding.svelte';
   import { getOnboardingStatus } from './lib/api.js';
 
@@ -41,6 +42,7 @@
     { href: '#/apps', label: 'Apps', icon: '\u25CB' },
     { href: '#/history', label: 'History', icon: '\u2630' },
     { href: '#/approve', label: 'Approve', icon: '\u2713' },
+    { href: '#/settings', label: 'Settings', icon: '\u2261' },
   ];
 
   function isActive(href) {
@@ -88,6 +90,8 @@
         <History />
       {:else if route.startsWith('#/approve')}
         <Approve {hash} />
+      {:else if route === '#/settings'}
+        <Settings />
       {:else}
         <div class="empty-state">
           <div class="icon">?</div>
