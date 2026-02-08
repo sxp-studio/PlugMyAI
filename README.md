@@ -10,7 +10,7 @@ Install the daemon, pair third-party apps through a browser approval flow, and t
 
 **macOS app** (menu bar, auto-updates):
 
-Download from [Releases](https://github.com/sxp-studio/plug-my-ai/releases/latest)
+Download from [Releases](https://github.com/sxp-studio/PlugMyAI/releases/latest)
 
 **CLI** (any platform):
 

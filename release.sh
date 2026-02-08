@@ -75,6 +75,6 @@ echo "════════════════════════�
 echo "  v$VERSION released!"
 echo "═══════════════════════════════════════"
 echo ""
-echo "  GitHub:  https://github.com/sxp-studio/plug-my-ai/releases/tag/v$VERSION"
+echo "  GitHub:  https://github.com/sxp-studio/PlugMyAI/releases/tag/v$VERSION"
 echo "  Website: https://plugmy.ai"
 echo ""

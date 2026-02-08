@@ -4,7 +4,7 @@
 
 set -e
 
-REPO="sxp-studio/plug-my-ai"
+REPO="sxp-studio/PlugMyAI"
 INSTALL_DIR="$HOME/.plug-my-ai/bin"
 BINARY_NAME="plug-my-ai"
 

@@ -51,7 +51,7 @@ end tell
 endef
 export DMG_LAYOUT_SCRIPT
 
-GITHUB_REPO := sxp-studio/plug-my-ai
+GITHUB_REPO := sxp-studio/PlugMyAI
 
 .PHONY: all clean project app daemon-universal bundle sign dmg notarize bump-version appcast checksums gh-release release
 
