@@ -1,0 +1,318 @@
+# PlugMyAI — Integration Spec
+
+> PlugMyAI is a local daemon (macOS) on localhost:21110. Proxies AI requests to user's own subscription (Claude, GPT, Ollama, etc.). OpenAI-compatible API. User installs once, your app pairs with it via a button, then makes standard chat completion requests.
+
+## Architecture
+
+Your App → localhost:21110 (plugmy.ai daemon) → User's AI provider
+
+## Integration Steps
+
+1. Add the button (HTML + CSS + JS below) to your app
+2. User clicks → pairing flow → you receive a token
+3. Use the token for OpenAI-compatible requests to localhost:21110
+
+## IMPORTANT: Branding Requirements
+
+The "Plug My AI" button is a branded component. You MUST use it exactly as provided:
+
+- Use the EXACT SVG icon (circle with two vertical bars) — do not substitute with emoji, text, or other icons
+- Use the EXACT text "Plug My AI" as the button label (not "Connect AI", "Link AI", etc.)
+- Use the EXACT CSS provided below — do not restyle, recolor, or adapt the button to match the host app's theme
+- The button must be visually distinct from the host app's UI — it is a recognizable brand element
+- Connected state MUST use green (#f0fdf4 background, #16a34a text) as specified in the CSS
+- The chevron dropdown indicator MUST appear in connected state
+- The dropdown for model selection MUST use the provided styles
+
+Do not modify the button's appearance. Copy the HTML, CSS, and JS as-is.
+
+---
+
+## Button HTML
+
+```html
+<div class="pma-btn-wrap" id="pma-wrap">
+  <button class="pma-btn" id="pma-btn">
+    <svg class="pma-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
+      <rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/>
+      <rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/>
+    </svg>
+    <span>Plug My AI</span>
+    <svg class="pma-btn-chevron" width="12" height="12" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M6 9l6 6 6-6"/>
+    </svg>
+  </button>
+  <div class="pma-dropdown" id="pma-dropdown"></div>
+</div>
+```
+
+## Button CSS
+
+Standalone — no dependencies, hardcoded colors, works on any background.
+
+```css
+.pma-btn-wrap { display: inline-block; position: relative; }
+.pma-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 18px 10px 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px; font-weight: 500;
+  background: #fff; color: #1a1a1a;
+  border: none; border-radius: 8px; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+  transition: box-shadow 0.15s;
+}
+.pma-btn:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.06);
+}
+.pma-btn-icon { flex-shrink: 0; }
+.pma-btn-chevron { display: none; opacity: 0.5; margin-left: -4px; }
+.pma-btn.connected {
+  background: #f0fdf4; color: #16a34a;
+  border: 1px solid rgba(22,163,74,0.3);
+}
+.pma-btn.connected .pma-btn-icon { color: #16a34a; }
+.pma-btn.connected .pma-btn-chevron { display: block; }
+.pma-btn.connecting { opacity: 0.7; cursor: wait; }
+.pma-dropdown {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  min-width: 200px; background: #fff; border: 1px solid #e5e5e5;
+  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 50; overflow: hidden;
+}
+.pma-btn-wrap.open .pma-dropdown { display: block; }
+.pma-dropdown-item {
+  display: block; width: 100%; padding: 10px 16px;
+  font-size: 13px; font-family: inherit; font-weight: 500;
+  color: #333; background: none; border: none;
+  text-align: left; cursor: pointer; transition: background 0.1s;
+}
+.pma-dropdown-item:hover { background: #f5f5f5; }
+.pma-dropdown-item.active { color: #16a34a; }
+.pma-dropdown-item + .pma-dropdown-item { border-top: 1px solid #e5e5e5; }
+.pma-dropdown-group {
+  padding: 8px 16px 4px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: #999;
+}
+```
+
+## Button JavaScript
+
+Complete state machine. Replace the two TODO values with your app details.
+
+```javascript
+var PMA_URL = 'http://localhost:21110';
+var PMA_APP_NAME = 'TODO_APP_NAME';  // TODO: replace with your app name
+var PMA_APP_URL  = 'TODO_APP_URL';   // TODO: replace with your app URL
+
+var pmaState = 'offline';  // offline | ready | connecting | connected
+var pmaModels = [];
+var pmaCurrentModel = '';
+var pmaToken = localStorage.getItem('pma_token') || '';
+
+var pmaBtn  = document.getElementById('pma-btn');
+var pmaWrap = document.getElementById('pma-wrap');
+var pmaDrop = document.getElementById('pma-dropdown');
+
+function pmaSetState(state) {
+  pmaState = state;
+  pmaBtn.classList.remove('connected', 'connecting');
+  pmaWrap.classList.remove('open');
+  var span = pmaBtn.querySelector('span');
+  if (state === 'connected') {
+    pmaBtn.classList.add('connected');
+    var model = pmaModels.find(function(m) { return m.id === pmaCurrentModel; });
+    span.textContent = model ? model.owned_by + ' \u2014 ' + model.id : 'Connected';
+  } else if (state === 'connecting') {
+    pmaBtn.classList.add('connecting');
+    span.textContent = 'Connecting...';
+  } else {
+    span.textContent = 'Plug My AI';
+  }
+}
+
+function pmaPopulateDropdown() {
+  pmaDrop.innerHTML = '';
+  var groups = {};
+  pmaModels.forEach(function(m) {
+    var p = m.owned_by || 'unknown';
+    if (!groups[p]) groups[p] = [];
+    groups[p].push(m);
+  });
+  Object.keys(groups).forEach(function(provider) {
+    if (Object.keys(groups).length > 1) {
+      var label = document.createElement('div');
+      label.className = 'pma-dropdown-group';
+      label.textContent = provider;
+      pmaDrop.appendChild(label);
+    }
+    groups[provider].forEach(function(m) {
+      var item = document.createElement('button');
+      item.className = 'pma-dropdown-item';
+      if (m.id === pmaCurrentModel) item.classList.add('active');
+      item.textContent = m.id;
+      item.onclick = function(e) { e.stopPropagation(); pmaSelectModel(m.id); };
+      pmaDrop.appendChild(item);
+    });
+  });
+}
+
+function pmaSelectModel(id) {
+  pmaCurrentModel = id;
+  localStorage.setItem('pma_model', id);
+  pmaSetState('connected');
+  pmaPopulateDropdown();
+  // TODO: your app can now call pmaChatRequest() or use pmaToken + pmaCurrentModel directly
+}
+
+pmaBtn.onclick = function() {
+  if (pmaState === 'offline') {
+    window.location.href = 'plugmyai://connect';
+    pmaSetState('connecting');
+    pmaWaitForDaemon(0);
+    return;
+  }
+  if (pmaState === 'connecting') return;
+  if (pmaState === 'connected') { pmaWrap.classList.toggle('open'); return; }
+  pmaStartPairing();
+};
+
+document.addEventListener('click', function(e) {
+  if (!pmaWrap.contains(e.target)) pmaWrap.classList.remove('open');
+});
+
+function pmaDetect() {
+  fetch(PMA_URL + '/v1/status', { mode: 'cors' })
+    .then(function(r) { return r.json(); })
+    .then(function() { pmaSetState('ready'); })
+    .catch(function() { pmaSetState('offline'); });
+}
+
+function pmaWaitForDaemon(attempt) {
+  if (attempt >= 6) { pmaSetState('offline'); return; }
+  setTimeout(function() {
+    fetch(PMA_URL + '/v1/status', { mode: 'cors' })
+      .then(function() { pmaSetState('ready'); pmaStartPairing(); })
+      .catch(function() { pmaWaitForDaemon(attempt + 1); });
+  }, 1000);
+}
+
+function pmaStartPairing() {
+  pmaSetState('connecting');
+  fetch(PMA_URL + '/v1/connect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    mode: 'cors',
+    body: JSON.stringify({ app_name: PMA_APP_NAME, app_url: PMA_APP_URL }),
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) { pmaPollApproval(data.request_id, 0); })
+    .catch(function() { pmaSetState('ready'); });
+}
+
+function pmaPollApproval(reqId, attempt) {
+  if (attempt >= 100) { pmaSetState('ready'); return; }
+  setTimeout(function() {
+    fetch(PMA_URL + '/v1/connect/' + reqId, { mode: 'cors' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.status === 'approved' && data.token) {
+          pmaToken = data.token;
+          localStorage.setItem('pma_token', data.token);
+          pmaValidateToken();
+        } else if (data.status === 'denied' || data.status === 'expired') {
+          pmaSetState('ready');
+        } else {
+          pmaPollApproval(reqId, attempt + 1);
+        }
+      })
+      .catch(function() { pmaPollApproval(reqId, attempt + 1); });
+  }, 3000);
+}
+
+function pmaValidateToken() {
+  fetch(PMA_URL + '/v1/models', {
+    headers: { 'Authorization': 'Bearer ' + pmaToken },
+    mode: 'cors',
+  })
+    .then(function(r) { if (!r.ok) throw new Error('invalid'); return r.json(); })
+    .then(function(data) {
+      pmaModels = data.data || [];
+      var saved = localStorage.getItem('pma_model');
+      if (saved && pmaModels.some(function(m) { return m.id === saved; })) {
+        pmaSelectModel(saved);
+      } else if (pmaModels.length > 0) {
+        pmaSelectModel(pmaModels[0].id);
+      }
+      pmaSetState('connected');
+      pmaPopulateDropdown();
+    })
+    .catch(function() {
+      localStorage.removeItem('pma_token');
+      localStorage.removeItem('pma_model');
+      pmaToken = '';
+      pmaDetect();
+    });
+}
+
+if (pmaToken) { pmaValidateToken(); } else { pmaDetect(); }
+```
+
+---
+
+## API Reference
+
+Base: `http://localhost:21110`
+
+### GET /v1/status
+No auth. Returns `{ "status": "ok", "version": "...", "providers": [...] }`.
+Connection refused = daemon not running.
+
+### POST /v1/connect
+No auth. Starts pairing flow (triggers approval dialog on user's machine).
+Body: `{ "app_name": "My App", "app_url": "https://myapp.com" }`
+Response: `{ "request_id": "a1b2c3d4", "status": "pending" }`
+
+### GET /v1/connect/{request_id}
+No auth. Poll every 3s for approval result.
+- `{ "status": "pending" }` — still waiting
+- `{ "status": "approved", "token": "pma_abc123..." }` — store this token
+- `{ "status": "denied" }` — user rejected
+- `{ "status": "expired" }` — 5 min timeout
+
+### GET /v1/models
+Auth: `Bearer {token}`.
+Response: `{ "data": [{ "id": "claude", "object": "model", "owned_by": "claude-code" }] }`
+
+### POST /v1/chat/completions
+Auth: `Bearer {token}`. OpenAI-compatible.
+Body: `{ "model": "claude", "messages": [{"role": "user", "content": "Hello!"}], "stream": true }`
+Streaming response: SSE lines `data: {"choices":[{"delta":{"content":"..."}}]}`, ends with `data: [DONE]`.
+Non-streaming (`"stream": false`): `{ "choices": [{"message": {"role": "assistant", "content": "..."}, "finish_reason": "stop"}] }`
+
+---
+
+## Icon SVG
+
+Uses `currentColor` — inherits text color automatically.
+
+```svg
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
+  <rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/>
+  <rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/>
+</svg>
+```
+
+---
+
+## Notes
+
+- OpenAI SDK compatible: set `baseURL` to `http://localhost:21110/v1` and `apiKey` to the pma token.
+- On 401 response: token was revoked. Clear stored token, re-show button.
+- Don't hardcode model names. Query GET /v1/models and let users pick.
+- Use `stream: true` for chat completions — better UX.
+- If daemon isn't running, the button JS tries `plugmyai://connect` URL scheme to launch it.
+- Install command: `curl -fsSL https://plugmy.ai/install.sh | sh`

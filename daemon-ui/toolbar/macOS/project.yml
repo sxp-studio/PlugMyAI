@@ -1,0 +1,39 @@
+name: PlugMyAI
+options:
+  bundleIdPrefix: ai.plugmy
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.6.0"
+
+settings:
+  base:
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+
+targets:
+  PlugMyAI:
+    type: application
+    platform: macOS
+    sources:
+      - path: PlugMyAI
+        excludes:
+          - "Resources/Info.plist"
+          - "Resources/PlugMyAI.entitlements"
+    settings:
+      base:
+        INFOPLIST_FILE: PlugMyAI/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: PlugMyAI/Resources/PlugMyAI.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: ai.plugmy.app
+        PRODUCT_NAME: PlugMyAI
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        GENERATE_INFOPLIST_FILE: NO
+    dependencies:
+      - package: Sparkle

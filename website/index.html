@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>plugmy.ai — Turn your AI subscription into a local API</title>
+  <meta name="description" content="A local AI proxy that lets you route your AI subscriptions to any app. One binary, no cloud, fully local.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="help" type="text/plain" href="/llms.txt" title="LLM Integration Spec">
+  <script defer src="https://jellystat.com/static/embed.js" onload="jellystat_init('845791248b8b4a88b6a54c4de0c34726');"></script>
+</head>
+<body>
+
+  <!-- ── Nav ─────────────────────────────────────────────── -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <svg class="logo" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/><rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/></svg>
+        <span>plugmy.ai</span><span class="nav-version">v0.1</span>
+      </a>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#providers">Providers</a>
+        <a href="#integrate">Build</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/sxp-studio/plug-my-ai" class="btn btn-sm btn-ghost github-nav-btn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+          <svg class="github-star-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
+          <span id="github-stars"></span>
+        </a>
+      </div>
+      <button class="nav-toggle" aria-label="Menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Hero ────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <h1><span class="hero-slot-wrap"><span class="hero-slot" id="hero-slot"><span>Turn your AI subscription</span><span>Turn your local AI</span></span></span><br>into a local API.</h1>
+      <p class="hero-sub">
+        You already pay for <strong>Claude Code</strong> or <strong>Codex</strong>.
+        Or maybe you run models locally with <strong>Ollama</strong>.
+      </p>
+      <p class="hero-sub">
+        PlugMyAI gives you an <strong>OpenAI-compatible endpoint on localhost</strong> — so you can use them
+        in your own apps, scripts, and workflows. No API keys. No extra cost.
+      </p>
+      <p class="hero-oss">Free and open source. macOS only.</p>
+      <div class="hero-demo" id="demo">
+        <div class="demo-chat" id="demo-chat">
+          <div class="demo-chat-header" id="demo-chat-header" style="display:none">
+            <span class="demo-chat-header-title">Chat with your AI</span>
+            <div class="pma-btn-wrap" id="demo-header-wrap">
+              <button class="pma-btn" id="demo-header-btn" onclick="handlePlugClick()">
+                <svg class="pma-btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/><rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/></svg>
+                <span>Connected</span>
+                <svg class="pma-btn-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="pma-dropdown" id="demo-header-dropdown"></div>
+            </div>
+          </div>
+          <div class="demo-messages" id="demo-messages"></div>
+          <div class="demo-onboarding" id="demo-onboarding">
+            <h3 class="demo-onboarding-title">Try the Demo</h3>
+            <p class="demo-onboarding-sub">Connect your local PlugMyAI and chat with your AI — right in your browser.</p>
+            <div class="demo-onboarding-steps">
+              <div class="demo-onboarding-step"><span class="demo-step-num">1</span><span>Click the button</span></div>
+              <div class="demo-onboarding-step"><span class="demo-step-num">2</span><span>Approve on your Mac</span></div>
+              <div class="demo-onboarding-step"><span class="demo-step-num">3</span><span>Start chatting</span></div>
+            </div>
+            <div class="pma-btn-wrap" id="demo-wrap">
+              <button class="pma-btn demo-btn" id="demo-btn" onclick="handlePlugClick()">
+                <svg class="pma-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/><rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/></svg>
+                <span>Plug My AI</span>
+                <svg class="pma-btn-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="pma-dropdown" id="demo-dropdown"></div>
+            </div>
+            <div class="demo-status" id="demo-status"></div>
+          </div>
+          <form class="demo-input-row blurred" id="demo-input-row" onsubmit="sendDemo(event)">
+            <input class="demo-input" id="demo-input" type="text" placeholder="Type a message..." autocomplete="off" disabled />
+            <button class="btn btn-primary btn-sm" type="submit" id="demo-send" disabled>Send</button>
+          </form>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="#integrate" class="btn btn-primary btn-lg">Add to My App</a>
+        <a href="https://github.com/sxp-studio/plug-my-ai" class="btn btn-lg">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ───────────────────────────────────────── -->
+  <section class="section section-alt" id="how">
+    <div class="container">
+      <h2 class="section-title">How it works</h2>
+      <p class="section-sub">Three steps. Under a minute.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Install PlugMyAI</h3>
+          <p>Single binary, runs in your menu bar. One-time download.</p>
+        </div>
+        <div class="step-arrow"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Connect your AI</h3>
+          <p>Pick your provider — Claude Code, Codex, API key, or a local model.</p>
+        </div>
+        <div class="step-arrow"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Use it everywhere</h3>
+          <p>OpenAI-compatible API on localhost. Use it in any app, script, or workflow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Providers ───────────────────────────────────────── -->
+  <section class="section section-alt" id="providers">
+    <div class="container">
+      <h2 class="section-title">Connect what you already pay for</h2>
+      <p class="section-sub">
+        Cloud subscriptions, API keys, or a local model on your machine. PlugMyAI routes it all through one local endpoint.
+      </p>
+      <div class="provider-grid">
+        <div class="provider-card">
+          <div class="provider-icon">⌘</div>
+          <div class="provider-name">Claude Code</div>
+          <div class="provider-tag">subscription</div>
+        </div>
+        <div class="provider-card">
+          <div class="provider-icon">▣</div>
+          <div class="provider-name">Codex</div>
+          <div class="provider-tag">subscription</div>
+        </div>
+        <div class="provider-card">
+          <div class="provider-icon">⬡</div>
+          <div class="provider-name">Ollama</div>
+          <div class="provider-tag">local</div>
+        </div>
+        <div class="provider-card provider-card-more">
+          <div class="provider-icon">+</div>
+          <div class="provider-name">More coming</div>
+          <div class="provider-tag">extensible</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Integration ─────────────────────────────────────── -->
+  <section class="section" id="integrate">
+    <div class="container">
+      <h2 class="section-title">Build apps with it</h2>
+      <p class="section-sub">
+        Ship apps where users bring their own AI — no API keys to manage, no tokens to pay for.
+        Five minutes to integrate. Works in web apps, Electron, native, CLI — anything that makes HTTP requests.
+      </p>
+      <div class="integrate-grid">
+        <div class="integrate-card">
+          <div class="integrate-label">The button</div>
+          <div class="integrate-states">
+            <div class="integrate-state">
+              <div class="integrate-state-label">Before connection</div>
+              <div class="pma-btn pma-btn-static">
+                <svg class="pma-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/><rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/></svg>
+                <span>Plug My AI</span>
+              </div>
+            </div>
+            <div class="integrate-state">
+              <div class="integrate-state-label">After connection</div>
+              <div class="pma-btn pma-btn-static connected">
+                <svg class="pma-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/><rect x="13" y="7.5" width="2" height="6.5" rx="1" fill="currentColor"/></svg>
+                <span>Anthropic — claude-sonnet-4-5</span>
+                <svg class="pma-btn-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:block"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="integrate-card">
+          <div class="integrate-label">Integrate</div>
+          <p class="integrate-agent-text">Give this link to your coding agent — it has everything to integrate:</p>
+          <div class="install-box">
+            <code>https://plugmy.ai/llms.txt</code>
+            <button class="copy-btn" onclick="copyText('https://plugmy.ai/llms.txt', this)" aria-label="Copy">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="integrate-platforms">
+        <span class="platform-tag">Web apps</span>
+        <span class="platform-tag">Electron</span>
+        <span class="platform-tag">macOS native</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Install ─────────────────────────────────────────── -->
+  <section class="section section-alt" id="install">
+    <div class="container center">
+      <h2 class="section-title">Install</h2>
+      <p class="section-sub">
+        Single binary, no dependencies. macOS only (for now).<br>
+        Runs in the menu bar and listens on <code>localhost:21110</code>.
+      </p>
+      <h3 class="install-heading">Download</h3>
+      <div class="install-downloads">
+        <a href="https://github.com/sxp-studio/plug-my-ai/releases/download/v0.1.0/PlugMyAI-0.1.0.dmg" class="btn btn-primary btn-lg install-download-btn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1v10M4 8l4 4 4-4"/><path d="M2 13h12"/></svg>
+          Download for macOS (Apple Silicon)
+        </a>
+      </div>
+      <details class="verify-build">
+        <summary>Verify your download</summary>
+        <p>Compare the SHA-256 checksum of your download against the <a href="https://github.com/sxp-studio/plug-my-ai/blob/main/website/releases/SHA256SUMS">checksums in our repo</a>:</p>
+        <div class="install-box">
+          <code>shasum -a 256 ~/Downloads/PlugMyAI-0.1.0.dmg</code>
+          <button class="copy-btn" onclick="copyText('shasum -a 256 ~/Downloads/PlugMyAI-0.1.0.dmg', this)" aria-label="Copy">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>
+          </button>
+        </div>
+      </details>
+      <h3 class="install-heading">CLI</h3>
+      <div class="install-box">
+        <code>curl -fsSL https://plugmy.ai/install.sh | sh</code>
+        <button class="copy-btn" onclick="copyText('curl -fsSL https://plugmy.ai/install.sh | sh', this)" aria-label="Copy">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ───────────────────────────────────────────────── -->
+  <section class="section" id="faq">
+    <div class="container">
+      <h2 class="section-title">FAQ</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Is this free?</summary>
+          <p>Yes. PlugMyAI is free and open source (MIT). You use your own existing AI subscriptions — there's nothing to pay for.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Is my data private?</summary>
+          <p>PlugMyAI runs entirely on your machine. No data passes through our servers — requests go directly from localhost to your AI provider. All configuration and data is stored locally in <code>~/.plug-my-ai/</code>.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Is this secure?</summary>
+          <p>By default, PlugMyAI only exposes chat completions — no tools, no code execution, no file access. This means connected apps can only send and receive text. You can optionally enable full access for specific apps, but be mindful: that gives them tool use, which depending on the provider could mean access to your filesystem, shell, and more. Only enable full access for apps you trust.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Does this violate provider terms?</summary>
+          <p>PlugMyAI routes through your own subscriptions. It doesn't share accounts, bypass rate limits, or resell access. You're responsible for your provider's ToS.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What providers are supported?</summary>
+          <p>Claude Code and Codex subscriptions, Ollama for local models, with more coming. The provider system is extensible.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What about Linux and Windows?</summary>
+          <p>macOS only for now. Linux and Windows support could happen if there's interest — pull requests are welcome on GitHub!</p>
+        </details>
+        <details class="faq-item">
+          <summary>Does this work on mobile?</summary>
+          <p>Not out of the box. PlugMyAI binds to localhost, so it's only reachable from the Mac it runs on. If you know what you're doing, you could expose it on your local network and connect from a mobile device — but that's not a supported setup yet.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How do apps connect?</summary>
+          <p>Apps pair with PlugMyAI via a one-time approval dialog. Once approved, they get a token to make OpenAI-compatible API requests on localhost.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container footer-simple">
+      <div class="footer-social">
+        <a href="https://x.com/sxpstudio" aria-label="X">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://bsky.app/profile/sxp.studio" aria-label="Bluesky">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.6 6.453.785 2.823 3.593 3.753 6.13 3.6-4.474.693-8.4 2.494-3.321 8.818C8.048 27.96 10.732 20.44 12 17.6c1.268 2.84 3.139 10.36 8.591 5.039 5.079-6.324 1.153-8.125-3.321-8.818 2.537.153 5.345-.777 6.13-3.6.222-.803.6-5.763.6-6.453 0-.688-.139-1.86-.902-2.203-.659-.3-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/></svg>
+        </a>
+        <a href="https://threads.net/@sxp.studio" aria-label="Threads">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.59 12c.025 3.086.718 5.496 2.057 7.164 1.432 1.781 3.632 2.695 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.17.408-2.266 1.332-3.084.88-.78 2.089-1.237 3.492-1.324 1.012-.063 1.96.025 2.842.262-.116-.68-.375-1.21-.779-1.58-.543-.497-1.374-.753-2.473-.761h-.032c-.83 0-1.907.262-2.553.862l-1.36-1.48C9.564 5.958 10.943 5.5 12.378 5.5h.047c1.598.013 2.833.456 3.672 1.315.782.8 1.244 1.92 1.378 3.334.664.18 1.269.43 1.807.75 1.27.756 2.178 1.88 2.623 3.257.585 1.808.363 4.479-1.727 6.522-1.826 1.786-4.07 2.63-7.263 2.728l-.328-.006zM12.616 13.15c-1.263.079-2.32.542-2.15 1.735.112.788.686 1.27 1.642 1.27h.18c1.164-.065 2.297-.795 2.456-3.368-.707-.194-1.422-.29-2.128-.237z"/></svg>
+        </a>
+      </div>
+      <p class="footer-copy"><a href="https://sxp.studio">sxp.studio</a> &middot; Copyright <script>document.write(new Date().getFullYear())</script></p>
+      <p class="footer-disclaimer">PlugMyAI is not affiliated with any of the AI providers mentioned on this page.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

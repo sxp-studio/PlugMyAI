@@ -1,0 +1,28 @@
+# Build output
+bin/
+daemon/plug-my-ai
+daemon-ui/dashboard/dist/
+daemon-ui/dashboard/node_modules/
+daemon/internal/dashboard/dist/
+
+# Go
+daemon/vendor/
+
+# Config and data (contains tokens)
+.plug-my-ai/
+
+# Release artifacts
+website/releases/*.dmg
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
