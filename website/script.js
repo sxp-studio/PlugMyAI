@@ -10,7 +10,7 @@ function copyText(text, btn) {
 (function () {
   var el = document.getElementById('github-stars');
   if (!el) return;
-  fetch('https://api.github.com/repos/sxp-studio/plug-my-ai')
+  fetch('https://api.github.com/repos/sxp-studio/PlugMyAI')
     .then(function (r) { return r.json(); })
     .then(function (data) {
       if (data.stargazers_count !== undefined) {
@@ -180,9 +180,10 @@ function handlePlugClick() {
 }
 
 // Poll for daemon to come online after URL scheme launch attempt.
-// If it doesn't appear within ~6s, assume not installed → go to #install.
+// Cold-starting the app + daemon can take 10-15s, so we poll generously.
+// If it doesn't appear within ~15s, assume not installed → go to #install.
 function waitForDaemon(attempt) {
-  if (attempt >= 6) {
+  if (attempt >= 15) {
     setState('offline');
     setStatus('');
     window.location.href = '#install';
