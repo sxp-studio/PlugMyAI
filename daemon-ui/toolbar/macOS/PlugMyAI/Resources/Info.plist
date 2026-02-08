@@ -2,34 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleName</key>
-	<string>PlugMyAI</string>
 	<key>CFBundleDisplayName</key>
 	<string>plug-my-ai</string>
-	<key>CFBundleIdentifier</key>
-	<string>ai.plugmy.app</string>
-	<key>CFBundleVersion</key>
-	<string>1</string>
-	<key>CFBundleShortVersionString</key>
-	<string>0.1.0</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
 	<key>CFBundleExecutable</key>
 	<string>PlugMyAI</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>13.0</string>
-	<key>LSUIElement</key>
-	<true/>
-	<key>SUFeedURL</key>
-	<string>https://plugmy.ai/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>0YPG2JRAKR31ihR9lQLTAPWiAX/1HuOgQx0eU/27wsU=</string>
-	<key>SUEnableAutomaticChecks</key>
-	<true/>
-	<key>NSSupportsSuddenTermination</key>
-	<false/>
-	<key>NSSupportsAutomaticTermination</key>
-	<false/>
+	<key>CFBundleIdentifier</key>
+	<string>ai.plugmy.app</string>
+	<key>CFBundleName</key>
+	<string>PlugMyAI</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -41,10 +25,26 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSSupportsAutomaticTermination</key>
+	<false/>
+	<key>NSSupportsSuddenTermination</key>
+	<false/>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://plugmy.ai/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>0YPG2JRAKR31ihR9lQLTAPWiAX/1HuOgQx0eU/27wsU=</string>
 </dict>
 </plist>

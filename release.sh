@@ -15,6 +15,7 @@ fi
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TOOLBAR_DIR="$ROOT_DIR/daemon-ui/toolbar/macOS"
 WEBSITE_DIR="$ROOT_DIR/website"
+IDENTITY="Developer ID Application: SXP Studio (794DNYA4B8)"
 
 echo "═══════════════════════════════════════"
 echo "  plug-my-ai release v$VERSION"
@@ -32,6 +33,18 @@ command -v xmit >/dev/null 2>&1 || { echo "Error: xmit not found"; exit 1; }
 # Check gh is authenticated
 gh auth status >/dev/null 2>&1 || { echo "Error: gh not authenticated (run: gh auth login)"; exit 1; }
 
+# Check Developer ID signing identity
+security find-identity -v -p codesigning | grep -q "Developer ID Application" || {
+  echo "Error: No 'Developer ID Application' certificate found in keychain"
+  exit 1
+}
+
+# Check notarytool profile
+xcrun notarytool history --keychain-profile "notarytool-profile" >/dev/null 2>&1 || {
+  echo "Error: notarytool-profile not found (run: xcrun notarytool store-credentials \"notarytool-profile\")"
+  exit 1
+}
+
 # Check working tree is clean
 if [ -n "$(git -C "$ROOT_DIR" status --porcelain)" ]; then
   echo "Error: working tree is dirty — commit or stash changes first"
@@ -48,7 +61,7 @@ echo ""
 
 # ── Step 2: Build macOS app + DMG + notarize ─────────────
 echo "Step 2/6: Building macOS app, DMG, signing, notarizing..."
-make -C "$TOOLBAR_DIR" release VERSION="$VERSION"
+make -C "$TOOLBAR_DIR" release VERSION="$VERSION" IDENTITY="$IDENTITY"
 echo ""
 
 # ── Step 3: Commit checksums ─────────────────────────────
