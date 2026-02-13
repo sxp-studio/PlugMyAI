@@ -79,6 +79,8 @@ app: project
 		-configuration Release \
 		-derivedDataPath $(BUILD_DIR) \
 		CODE_SIGN_IDENTITY="$(IDENTITY)" \
+		CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
+		OTHER_CODE_SIGN_FLAGS=--timestamp \
 		build
 
 # Copy Go daemon binary into .app bundle
@@ -88,17 +90,40 @@ bundle: app daemon-universal
 	chmod +x $(APP_BUNDLE)/Contents/Resources/$(BINARY_NAME)
 	@echo "✓ $(APP_BUNDLE) is ready"
 
-# Code sign with Developer ID for distribution
+# Code sign with Developer ID for distribution (inside-out, no --deep)
 sign:
-	codesign --force --deep --options runtime \
+	@echo "Signing binaries with $(IDENTITY)..."
+	# Sparkle XPC services (innermost first)
+	codesign --force --options runtime --timestamp \
+		--sign "$(IDENTITY)" \
+		$(APP_BUNDLE)/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc
+	codesign --force --options runtime --timestamp \
+		--sign "$(IDENTITY)" \
+		$(APP_BUNDLE)/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc
+	# Sparkle Updater.app
+	codesign --force --options runtime --timestamp \
+		--sign "$(IDENTITY)" \
+		$(APP_BUNDLE)/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app
+	# Sparkle Autoupdate binary
+	codesign --force --options runtime --timestamp \
+		--sign "$(IDENTITY)" \
+		$(APP_BUNDLE)/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate
+	# Sparkle framework itself
+	codesign --force --options runtime --timestamp \
+		--sign "$(IDENTITY)" \
+		$(APP_BUNDLE)/Contents/Frameworks/Sparkle.framework
+	# Go daemon binary
+	codesign --force --options runtime --timestamp \
 		--sign "$(IDENTITY)" \
 		$(APP_BUNDLE)/Contents/Resources/$(BINARY_NAME)
-	codesign --force --deep --options runtime \
+	# Main app bundle (outermost, last)
+	codesign --force --options runtime --timestamp \
 		--sign "$(IDENTITY)" \
 		$(APP_BUNDLE)
 
 # Create distributable DMG with Applications shortcut and clean layout
-dmg: bundle
+# Expects a signed .app bundle — run `bundle` then `sign` first
+dmg:
 	@echo "Creating DMG…"
 	rm -rf $(DMG_STAGING) $(DMG_RW) $(BUILD_DIR)/$(DMG_NAME)
 	mkdir -p $(DMG_STAGING)

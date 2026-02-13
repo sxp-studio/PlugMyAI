@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>PlugMyAI</title>
+        <item>
+            <title>0.1.0</title>
+            <pubDate>Sun, 08 Feb 2026 18:45:29 +0100</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://plugmy.ai/PlugMyAI-0.1.0.dmg" length="19382789" type="application/octet-stream" sparkle:edSignature="QXnR0FV7zR5b/BnkEqmuyhAWp5xC8zj9ZS2R5xByIrtMHeDVPe7GFBp2V+G39Y99QS9O5cTBLmIt5wZ4mOc7Ag=="/>
+        </item>
+    </channel>
+</rss>
